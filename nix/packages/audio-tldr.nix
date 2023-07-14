@@ -1,10 +1,17 @@
 {
   rustPlatform,
   lib,
+  pkg-config,
+  openssl,
 }: let
   src = builtins.path {
-    name = "audio-tldr";
-    path = lib.cleanSource ../..;
+    name = "audio-tldr-source";
+    path = lib.sources.sourceByRegex ../.. [
+      ".*Cargo\.toml"
+      ".*Cargo\.lock"
+      ".*src.*"
+      ".*\.rs"
+    ];
   };
   config = lib.trivial.importTOML ../../Cargo.toml;
 in
@@ -13,6 +20,14 @@ in
     version = config.package.version;
 
     inherit src;
+
+    nativeBuildInputs = [
+      pkg-config
+    ];
+
+    propagatedBuildInputs = [
+      openssl
+    ];
 
     cargoDeps = {
       lockFile = "../../Cargo.lock";

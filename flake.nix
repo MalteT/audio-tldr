@@ -29,6 +29,24 @@
       }: {
         pre-commit.check.enable = true;
         pre-commit.settings.hooks.treefmt.enable = true;
+        # Docker container
+        packages.docker-container = pkgs.dockerTools.buildLayeredImage {
+          name = "audio-tldr";
+          tag = "latest";
+          contents = [
+            pkgs.cacert
+          ];
+          config = {
+            Cmd = [
+              "${self'.packages.default}/bin/audio-tldr"
+              # "${pkgs.iputils}/bin/ping" "api.telegram.org"
+            ];
+            Env = [
+              "RUST_LOG=info"
+              "SSL_CERT_DIR=/"
+            ];
+          };
+        };
         # Main package
         packages.audio-tldr = pkgs.callPackage ./nix/packages/audio-tldr.nix {};
         packages.default = self'.packages.audio-tldr;
@@ -39,11 +57,12 @@
             config.treefmt.package
             pkgs.cargo
             pkgs.clippy
-            pkgs.rustfmt
             pkgs.nil
+            pkgs.openssl
             pkgs.pkg-config
             pkgs.rust-analyzer
             pkgs.rustc
+            pkgs.rustfmt
           ];
           RUST_LOG = "trace";
         };
